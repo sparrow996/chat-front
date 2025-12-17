@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 import { api } from '../services/api';
 
@@ -11,6 +11,13 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('123');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Check for Secure Context (Required for Web Crypto API)
+  useEffect(() => {
+    if (!window.crypto || !window.crypto.subtle) {
+      setError("Critical Error: Web Crypto API is unavailable. Please use localhost or HTTPS.");
+    }
+  }, []);
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) return;
@@ -67,13 +74,13 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             />
           </div>
 
-          {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+          {error && <p className="text-red-500 text-xs text-center font-medium">{error}</p>}
 
           <button 
             onClick={handleLogin}
-            disabled={isLoading}
+            disabled={isLoading || !!error}
             className={`w-full py-2 rounded-md font-medium text-white transition-colors mt-2 flex justify-center items-center ${
-                isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#07c160] hover:bg-[#06ad56]'
+                isLoading || error ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#07c160] hover:bg-[#06ad56]'
             }`}
           >
             {isLoading ? <i className="fas fa-circle-notch fa-spin"></i> : 'Log In'}
