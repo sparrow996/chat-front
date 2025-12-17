@@ -85,17 +85,17 @@ const formatMessageTime = (timestamp: number) => {
 };
 
 const handleScroll = async () => {
-    if (!containerRef.current || loading.value || !props.hasMore) return;
+    if (!containerRef.value || loading.value || !props.hasMore) return;
     
-    if (containerRef.current.scrollTop === 0) {
+    if (containerRef.value.scrollTop === 0) {
         loading.value = true;
-        prevHeightRef.value = containerRef.current.scrollHeight;
+        prevHeightRef.value = containerRef.value.scrollHeight;
         await emit('loadMore');
         // Restore scroll position after data load
         nextTick(() => {
-             if (containerRef.current) {
-                 const currentHeight = containerRef.current.scrollHeight;
-                 containerRef.current.scrollTop = currentHeight - prevHeightRef.value;
+             if (containerRef.value) {
+                 const currentHeight = containerRef.value.scrollHeight;
+                 containerRef.value.scrollTop = currentHeight - prevHeightRef.value;
                  loading.value = false;
              }
         });
@@ -105,29 +105,28 @@ const handleScroll = async () => {
 // Watch for contact change to scroll to bottom
 watch(() => props.activeContact.id, () => {
     nextTick(() => {
-        if (containerRef.current) {
-            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        if (containerRef.value) {
+            containerRef.value.scrollTop = containerRef.value.scrollHeight;
         }
     });
 });
 
 // Watch for NEW messages (appended at end) to scroll to bottom
 watch(() => props.messages, (newVal, oldVal) => {
-    // Only auto-scroll if we are not loading old messages (which is handled in handleScroll)
-    // and if the new message is at the end.
-    // Simplified logic: If length increased and we were not loading, scroll to bottom
-    if (!loading.value && newVal.length > oldVal.length) {
+    // We want to scroll to bottom if a new message is added (length increased)
+    // AND we are not currently loading history (loading.value is false)
+    if (!loading.value) {
          nextTick(() => {
-            if (containerRef.current) {
-                containerRef.current.scrollTop = containerRef.current.scrollHeight;
+            if (containerRef.value) {
+                containerRef.value.scrollTop = containerRef.value.scrollHeight;
             }
         });
     }
 }, { deep: true });
 
 onMounted(() => {
-    if (containerRef.current) {
-        containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    if (containerRef.value) {
+        containerRef.value.scrollTop = containerRef.value.scrollHeight;
     }
 });
 </script>

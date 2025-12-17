@@ -12,7 +12,20 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.defaults.adapter = async (config: AxiosRequestConfig): Promise<AxiosResponse> => {
     // Construct URL
     const baseURL = config.baseURL || '';
-    const url = config.url ? (baseURL + config.url).replace('//', '/') : '';
+    let url = config.url ? (baseURL + config.url).replace('//', '/') : '';
+
+    if (config.params) {
+        const params = new URLSearchParams();
+        Object.entries(config.params).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                params.append(key, String(value));
+            }
+        });
+        const queryString = params.toString();
+        if (queryString) {
+            url += (url.includes('?') ? '&' : '?') + queryString;
+        }
+    }
     
     // Construct RequestInit for fetch
     const init: RequestInit = {

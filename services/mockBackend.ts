@@ -104,8 +104,51 @@ const pushToClient = async (userId: string, data: any) => {
 export const mockSocketConnect = (userId: string, onMessage: SocketCallback) => {
     console.log(`[MockSocket] Client connected: ${userId}`);
     connectedClients.set(userId, onMessage);
+    
+    // Auto-reply simulation for demo purposes
+    // Sends a message every 5 seconds from "Bob" (10002) if Alice (10001) is connected, or vice versa
+    const interval = setInterval(async () => {
+        // If current user is Alice, simulate Bob sending a message
+        const senderId = userId === '10001' ? '10002' : '10001'; 
+        const senderName = userId === '10001' ? 'Bob' : 'Alice';
+        
+        // Only if we are friends (simple check)
+        const friendIds = MOCK_FRIENDS.get(userId);
+        if (friendIds && friendIds.has(senderId)) {
+            const chatId = getChatId(userId, senderId);
+            if (!messageStore.has(chatId)) messageStore.set(chatId, []);
+            
+            const randomMsg = [
+                "Hey, how are you?",
+                "Did you see the news?",
+                "Nice weather today!",
+                "Are we still on for lunch?",
+                "Check out this cool sticker!",
+                "Hello from the server loop!",
+                `Current server time: ${new Date().toLocaleTimeString()}`
+            ];
+            const content = randomMsg[Math.floor(Math.random() * randomMsg.length)];
+
+            const newMessage: Message = {
+                id: Date.now().toString(),
+                senderId: senderId,
+                content: content,
+                type: MessageType.TEXT,
+                timestamp: Date.now(),
+                isRead: false,
+                isRevoked: false
+            };
+            
+            messageStore.get(chatId)?.push(newMessage);
+            
+            // Push to the connected client (userId)
+            await pushToClient(userId, { type: 'NEW_MESSAGE', data: newMessage });
+        }
+    }, 5000);
+
     return () => {
         console.log(`[MockSocket] Client disconnected: ${userId}`);
+        clearInterval(interval);
         connectedClients.delete(userId);
     };
 };
