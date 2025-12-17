@@ -1,0 +1,5 @@
+{
+  "name": "WeChat-Style Secure Chat",
+  "description": "A WeChat-inspired chat application featuring end-to-end encryption simulation, emoji/sticker support, image sharing, and AI integration using Gemini 2.5 Flash.",
+  "requestFramePermissions": []
+}
